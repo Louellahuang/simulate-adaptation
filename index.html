@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Fishies in a Tank</title>
+
+	<style>
+		#canvas{
+			border: 1px solid blue;
+		}
+	</style>
+
+</head>
+<body>
+	<canvas id="canvas" height="200" width="250"></canvas>
+	<button id="add-creature">Add Creature</button>
+
+	<script>
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		var animate;
+
+		function Creature(){
+			this.radius = 25;
+			this.x = 36;
+			this.y = 24;
+			this.colour = 'red';
+			this.deadColour = 'grey';
+			this.xspeed = 2;
+			this.yspeed = 2;
+			this.energy = 100;
+			this.eat = function(){
+				if(withinRadius(food.x, food.y, this.x, this.y, this.radius)){
+					//eating formula
+					food.x = null;
+					food.y = null;
+					this.energy += food.energy;
+				}
+			}
+		}
+
+		var creatures = [];
+
+
+
+
+		var energyDrained = .1;
+
+		var food = {
+			radius: 3,
+			colour: 'orange',
+			x: null,
+			y: null,
+			energy: 20,
+		}
+
+		var addCreatureBtn = document.getElementById('add-creature');
+
+		addCreatureBtn.onclick = addCreature;
+
+		function addCreature(){
+			var creature = new Creature();
+			creatures.push(creature);
+		}
+
+		function draw(){
+			//clear canvas
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			//draw food
+			drawFood();
+
+			for (var i = 0; i < creatures.length; i++) {
+				var creature = creatures[i];
+				// update x, y
+				creature.x = creature.xspeed + creature.x;
+				// creature.x += creature.xspeed;
+				creature.y += creature.yspeed;
+				//check if within canvas
+				if(creature.x+creature.radius > canvas.width || creature.x - creature.radius < 0){
+					creature.xspeed *= -1;
+				}if(creature.y+creature.radius > canvas.height || creature.y - creature.radius < 0){
+					creature.yspeed *= -1;
+				}
+
+				drawCreature(creature);
+				creature.eat();
+				console.log(creature.energy);
+			}
+			
+			//when animation is finished run a function
+			animate = window.requestAnimationFrame(draw);
+			
+		}
+
+		function drawCreature(c){
+			//drains energy at the same time
+			c.energy -= energyDrained;
+			//do a 'is the c alive' check
+			if (c.energy <= 0){
+				ctx.fillStyle = c.deadColour;
+				c.xspeed = 0;
+				c.yspeed = 0;
+			}else{
+				ctx.fillStyle = c.colour;
+			}
+
+			//draw c
+			ctx.beginPath();
+			ctx.arc(c.x, c.y, c.radius, 0, 2 * Math.PI);
+			ctx.fill();
+			//c's eyes
+			ctx.beginPath();
+			ctx.arc(c.x - 13, c.y - 6, 5, 0, 2 * Math.PI);
+			ctx.fillStyle = 'white';
+			ctx.fill();
+			//c's eyes
+			ctx.beginPath();
+			ctx.arc(c.x + 13, c.y - 6, 5, 0, 2 * Math.PI);
+			ctx.fillStyle = 'white';
+			ctx.fill();
+			//c's mouth
+			ctx.beginPath();
+			ctx.arc(c.x, c.y + 11, 7, 0, 1 * Math.PI);
+			ctx.fillStyle = 'white';
+			ctx.fill();
+
+		}
+
+		function drawFood(){
+			//spawn fod randomly
+			if (!food.x){
+				food.x = Math.floor(Math.random()*canvas.width)+1;
+				food.y = Math.floor(Math.random()*canvas.height)+1;
+			}
+
+			ctx.fillStyle = food.colour;
+
+			ctx.beginPath();
+			ctx.arc(food.x, food.y, food.radius, 0, 2 * Math.PI);
+			ctx.fill();
+		}
+
+		function withinRadius(x1, y1, x2, y2, radius){
+			// http://pythagoras.nu/
+			var a = x1 - x2;
+			var b = y1 - y2;
+			var c2 = a*a + b*b;
+
+			if(c2 < radius*radius){
+				return true;
+			} else {
+				return false;
+			}
+		}
+
+
+		draw();
+
+
+	</script>
+</body>
+</html>

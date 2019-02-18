@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Fishies in a Tank</title>
+
+	<style>
+		#canvas{
+			border: 1px solid blue;
+		}
+	</style>
+
+</head>
+<body>
+	<canvas id="canvas" height="200" width="200"></canvas>
+	<script>
+		var canvas = document.getElementById('canvas');
+		var ctx = canvas.getContext('2d');
+		var animate;
+
+		var creature = {
+			width: 50,
+			height: 70,
+			x: 3,
+			y: 3,
+			colour: 'red',
+			deadColour: 'grey',
+			xspeed: 2,
+			yspeed: 2,
+			energy: 100,
+		}
+
+		var energyDrained = .1;
+
+		var food = {
+			radius: 3,
+			colour: 'orange',
+			x: null,
+			y: null,
+			energy: 20,
+		}
+
+		function draw(){
+			//clear rectangle
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			//draw food
+			drawFood();
+			// update x, y
+			creature.x = creature.xspeed + creature.x;
+			// creature.x += creature.xspeed;
+			creature.y += creature.yspeed;
+			//check if within canvas
+			if(creature.x+creature.width > canvas.width || creature.x<0){
+				creature.xspeed *= -1;
+			}if(creature.y+creature.height > canvas.width || creature.y<0){
+				creature.yspeed *= -1;
+			}
+			drawCreature();
+			eat();
+			//when animation is finished run a function
+			animate = window.requestAnimationFrame(draw);
+			console.log(creature.energy);
+		}
+
+		function drawCreature(){
+			//drains energy at the same time
+			creature.energy -= energyDrained;
+			//do a 'is the creature alive' check
+			if (creature.energy <= 0){
+				ctx.fillStyle = creature.deadColour;
+				creature.xspeed = 0;
+				creature.yspeed = 0;
+			}else{
+				ctx.fillStyle = creature.colour;
+			}
+
+			//draw rectangle
+			ctx.fillRect(creature.x, creature.y, creature.width, creature.height);
+			//creature's eyes
+			ctx.clearRect(creature.x+30, creature.y+6, 10, 10);
+			ctx.clearRect(creature.x+10, creature.y+6, 10, 10);
+			//creatue's mouth
+			ctx.clearRect(creature.x+10, creature.y+40, 25, 20);
+
+		}
+
+		function drawFood(){
+			if (!food.x){
+				food.x = Math.floor(Math.random()*canvas.width)+1;
+				food.y = Math.floor(Math.random()*canvas.height)+1;
+			}
+
+			ctx.fillStyle = food.colour;
+
+			ctx.beginPath();
+			ctx.arc(food.x, food.y, food.radius, 0, 2 * Math.PI);
+			ctx.fill();
+		}
+
+		function eat(){
+			if( food.x > creature.x &&
+				food.x < creature.x + creature.width &&
+				food.y > creature.y &&
+				food.y < creature.y + creature.height){
+				food.x = null;
+				food.y = null;
+				creature.energy += food.energy;
+			}
+		}
+
+
+		draw();
+
+
+	</script>
+</body>
+</html>
